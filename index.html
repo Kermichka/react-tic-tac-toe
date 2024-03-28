@@ -13,6 +13,12 @@
             width: 100px;
             vertical-align: top;
         }
+
+        .board-size-selector ul {
+            list-style: none;
+            display: flex;
+            flex-direction: row;
+        }
     </style>
 </head>
 
@@ -27,7 +33,7 @@
             );
         }
 
-        function Board({ xIsNext, squares, onPlay }) {
+        function Board({ xIsNext, squares, onPlay, boardSize }) {
             function handleClick(i) {
                 if (calculateWinner(squares) || squares[i]) {
                     return;
@@ -49,24 +55,20 @@
                 status = 'Next player: ' + (xIsNext ? 'X' : 'O');
             }
 
+            const rows = [];
+            for (let i = 0; i < boardSize; i++) {
+                const row = [];
+                for (let j = 0; j < boardSize; j++) {
+                    const index = i * boardSize + j;
+                    row.push(<Square key={index} value={squares[index]} onSquareClick={() => handleClick(index)} />);
+                }
+                rows.push(<div className="board-row" key={i}>{row}</div>);
+            }
+
             return (
                 <>
                     <div className="status">{status}</div>
-                    <div className="board-row">
-                        <Square value={squares[0]} onSquareClick={() => handleClick(0)} />
-                        <Square value={squares[1]} onSquareClick={() => handleClick(1)} />
-                        <Square value={squares[2]} onSquareClick={() => handleClick(2)} />
-                    </div>
-                    <div className="board-row">
-                        <Square value={squares[3]} onSquareClick={() => handleClick(3)} />
-                        <Square value={squares[4]} onSquareClick={() => handleClick(4)} />
-                        <Square value={squares[5]} onSquareClick={() => handleClick(5)} />
-                    </div>
-                    <div className="board-row">
-                        <Square value={squares[6]} onSquareClick={() => handleClick(6)} />
-                        <Square value={squares[7]} onSquareClick={() => handleClick(7)} />
-                        <Square value={squares[8]} onSquareClick={() => handleClick(8)} />
-                    </div>
+                    {rows}
                 </>
             );
         }
@@ -74,8 +76,12 @@
         function Game() {
             const [history, setHistory] = React.useState([Array(9).fill(null)]);
             const [currentMove, setCurrentMove] = React.useState(0);
-            const xIsNext = currentMove % 2 === 0;
-            const currentSquares = history[currentMove];
+            const [boardSize, setBoardSize] = React.useState(3);
+
+            React.useEffect(() => {
+                setHistory([Array(boardSize * boardSize).fill(null)]);
+                setCurrentMove(0);
+            }, [boardSize]);
 
             function handlePlay(nextSquares) {
                 const nextHistory = [...history.slice(0, currentMove + 1), nextSquares];
@@ -87,6 +93,12 @@
                 setCurrentMove(nextMove);
             }
 
+            function changeBoardSize(size) {
+                setBoardSize(size);
+            }
+
+            const currentSquares = history[currentMove];
+            const xIsNext = currentMove % 2 === 0;
             const moves = history.map((squares, move) => {
                 let description;
                 if (move > 0) {
@@ -104,10 +116,25 @@
             return (
                 <div className="game">
                     <div className="game-board">
-                        <Board xIsNext={xIsNext} squares={currentSquares} onPlay={handlePlay} />
+                        <Board xIsNext={xIsNext} squares={currentSquares} onPlay={handlePlay} boardSize={boardSize} />
                     </div>
                     <div className="game-info">
                         <ol>{moves}</ol>
+                    </div>
+                    <div className="board-size-selector">
+                        <h3>Board size selector</h3>
+                        <ul>
+                            <li>
+                                <button onClick={() => changeBoardSize(3)}>3</button>
+                            </li>
+                            <li>
+                                <button onClick={() => changeBoardSize(4)}>4</button>
+                            </li>
+                            <li>
+                                <button onClick={() => changeBoardSize(5)}>5</button>
+                            </li>
+                        </ul>
+                        <p>Current Board Size: {boardSize}</p>
                     </div>
                 </div>
             );
