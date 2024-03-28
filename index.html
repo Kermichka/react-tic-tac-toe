@@ -2,18 +2,24 @@
 <html>
 
 <head>
+    <!-- Metadata -->
     <meta charset="UTF-8" />
+    <!-- Title of the page -->
     <title>Hello World</title>
+    <!-- Scripts for React, ReactDOM, and Babel -->
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- Styling -->
     <style>
+        /* Styling for the squares on the board */
         .square {
             height: 100px;
             width: 100px;
             vertical-align: top;
         }
 
+        /* Styling for the board size selector */
         .board-size-selector ul {
             list-style: none;
             display: flex;
@@ -23,8 +29,11 @@
 </head>
 
 <body>
+    <!-- Root element for React -->
     <div id="root"></div>
+    <!-- JavaScript code -->
     <script type="text/babel">
+        // React component for rendering individual squares
         function Square({ value, onSquareClick }) {
             return (
                 <button className="square" onClick={onSquareClick}>
@@ -33,20 +42,27 @@
             );
         }
 
+        // React component for rendering the game board
         function Board({ xIsNext, squares, onPlay, boardSize }) {
+            // Function to handle click events on squares
             function handleClick(i) {
+                // Check if there's already a winner or the square is already filled
                 if (calculateWinner(squares, boardSize) || squares[i]) {
                     return;
                 }
+                // Create a copy of the squares array
                 const nextSquares = squares.slice();
+                // Update the clicked square with 'X' or 'O'
                 if (xIsNext) {
                     nextSquares[i] = 'X';
                 } else {
                     nextSquares[i] = 'O';
                 }
+                // Call the onPlay function with the updated squares
                 onPlay(nextSquares);
             }
 
+            // Determine the status of the game (winner or next player)
             const winner = calculateWinner(squares, boardSize);
             let status;
             if (winner) {
@@ -55,6 +71,7 @@
                 status = 'Next player: ' + (xIsNext ? 'X' : 'O');
             }
 
+            // Generate rows and squares for the board
             const rows = [];
             for (let i = 0; i < boardSize; i++) {
                 const row = [];
@@ -65,6 +82,7 @@
                 rows.push(<div className="board-row" key={i}>{row}</div>);
             }
 
+            // Render the board and game status
             return (
                 <>
                     <div className="status">{status}</div>
@@ -73,32 +91,41 @@
             );
         }
 
+        // React component for the game logic
         function Game() {
+            // State variables for game history, current move, and board size
             const [history, setHistory] = React.useState([Array(9).fill(null)]);
             const [currentMove, setCurrentMove] = React.useState(0);
             const [boardSize, setBoardSize] = React.useState(3);
 
+            // Update history and current move when board size changes
             React.useEffect(() => {
                 setHistory([Array(boardSize * boardSize).fill(null)]);
                 setCurrentMove(0);
             }, [boardSize]);
 
+            // Function to handle a player's move
             function handlePlay(nextSquares) {
                 const nextHistory = [...history.slice(0, currentMove + 1), nextSquares];
                 setHistory(nextHistory);
                 setCurrentMove(nextHistory.length - 1);
             }
 
+            // Function to jump to a specific move
             function jumpTo(nextMove) {
                 setCurrentMove(nextMove);
             }
 
+            // Function to change the board size
             function changeBoardSize(size) {
                 setBoardSize(size);
             }
 
+            // Calculate current squares and determine next player
             const currentSquares = history[currentMove];
             const xIsNext = currentMove % 2 === 0;
+
+            // Generate list of moves
             const moves = history.map((squares, move) => {
                 let description;
                 if (move > 0) {
@@ -113,6 +140,7 @@
                 );
             });
 
+            // Render the game board, moves, and board size selector
             return (
                 <div className="game">
                     <div className="game-board">
@@ -140,6 +168,7 @@
             );
         }
 
+        // Function to calculate the winner
         function calculateWinner(squares, boardSize) {
             const lines = {
                 3: [
@@ -198,6 +227,7 @@
             return null;
         }
 
+        // Render the Game component to the root element
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<Game />);
     </script>
