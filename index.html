@@ -212,47 +212,47 @@
                     }
                 }
             }
-            const lines = [];
+            const winning_lines = [];
 
-            // Horizontal lines
+            // Horizontal winning_lines
             for (let i = 0; i < boardSize.rows; i++) {
                 for (let j = 0; j <= boardSize.cols - winCondition; j++) {
-                    lines.push(Array.from({ length: winCondition }, (_, k) => i * boardSize.cols + j + k));
+                    winning_lines.push(Array.from({ length: winCondition }, (_, k) => i * boardSize.cols + j + k));
                 }
             }
 
-            // Vertical lines
+            // Vertical winning_lines
             for (let i = 0; i <= boardSize.rows - winCondition; i++) {
                 for (let j = 0; j < boardSize.cols; j++) {
-                    lines.push(Array.from({ length: winCondition }, (_, k) => (i + k) * boardSize.cols + j));
+                    winning_lines.push(Array.from({ length: winCondition }, (_, k) => (i + k) * boardSize.cols + j));
                 }
             }
 
-            // Diagonal lines (top-left to bottom-right)
+            // Diagonal winning_lines (top-left to bottom-right)
             for (let i = 0; i <= boardSize.rows - winCondition; i++) {
                 for (let j = 0; j <= boardSize.cols - winCondition; j++) {
-                    lines.push(Array.from({ length: winCondition }, (_, k) => (i + k) * boardSize.cols + j + k));
+                    winning_lines.push(Array.from({ length: winCondition }, (_, k) => (i + k) * boardSize.cols + j + k));
                 }
             }
 
-            // Diagonal lines (top-right to bottom-left)
+            // Diagonal winning_lines (top-right to bottom-left)
             for (let i = 0; i <= boardSize.rows - winCondition; i++) {
                 for (let j = winCondition - 1; j < boardSize.cols; j++) {
-                    lines.push(Array.from({ length: winCondition }, (_, k) => (i + k) * boardSize.cols + j - k));
+                    winning_lines.push(Array.from({ length: winCondition }, (_, k) => (i + k) * boardSize.cols + j - k));
                 }
             }
 
-            for (let line of lines) {
+            for (let winning_line of winning_lines) {
                 let isWinningLine = true;
                 for (let i = 0; i < winCondition - 1; i++) {
-                    const [a, b] = [line[i], line[i + 1]];
+                    const [a, b] = [winning_line[i], winning_line[i + 1]];
                     if (!squares[a] || squares[a] !== squares[b]) {
                         isWinningLine = false;
                         break;
                     }
                 }
                 if (isWinningLine) {
-                    return squares[line[0]];
+                    return squares[winning_line[0]];
                 }
             }
             return null;
