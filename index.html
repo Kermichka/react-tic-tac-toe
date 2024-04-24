@@ -148,13 +148,10 @@
 
             // Function to change the win condition
             function changeWinCondition(winCondition) {
-                // Calculate the maximum value between rows and columns
                 const maxSize = Math.max(boardSize.rows, boardSize.cols);
-                // Check if input value is not empty and doesn't exceed the maximum size
                 if (winCondition && winCondition <= maxSize) {
                     setBoardSize({ rows: boardSize.rows, cols: boardSize.cols, winCondition: winCondition });
                 } else {
-                    // If the win condition exceeds the maximum size, set it to the maximum size
                     setBoardSize({ rows: boardSize.rows, cols: boardSize.cols, winCondition: maxSize });
                 }
             }
