@@ -209,49 +209,43 @@
                     }
                 }
             }
-            const winning_lines = [];
+            const indexCombinationLines = [];
 
             // Horizontal winning_lines
             for (let i = 0; i < boardSize.rows; i++) {
                 for (let j = 0; j <= boardSize.cols - winCondition; j++) {
-                    winning_lines.push(Array.from({ length: winCondition }, (_, k) => i * boardSize.cols + j + k));
+                    indexCombinationLines.push(Array.from({ length: winCondition }, (_, k) => i * boardSize.cols + j + k));
                 }
             }
 
             // Vertical winning_lines
             for (let i = 0; i <= boardSize.rows - winCondition; i++) {
                 for (let j = 0; j < boardSize.cols; j++) {
-                    winning_lines.push(Array.from({ length: winCondition }, (_, k) => (i + k) * boardSize.cols + j));
+                    indexCombinationLines.push(Array.from({ length: winCondition }, (_, k) => (i + k) * boardSize.cols + j));
                 }
             }
 
             // Diagonal winning_lines (top-left to bottom-right)
             for (let i = 0; i <= boardSize.rows - winCondition; i++) {
                 for (let j = 0; j <= boardSize.cols - winCondition; j++) {
-                    winning_lines.push(Array.from({ length: winCondition }, (_, k) => (i + k) * boardSize.cols + j + k));
+                    indexCombinationLines.push(Array.from({ length: winCondition }, (_, k) => (i + k) * boardSize.cols + j + k));
                 }
             }
 
             // Diagonal winning_lines (top-right to bottom-left)
             for (let i = 0; i <= boardSize.rows - winCondition; i++) {
                 for (let j = winCondition - 1; j < boardSize.cols; j++) {
-                    winning_lines.push(Array.from({ length: winCondition }, (_, k) => (i + k) * boardSize.cols + j - k));
+                    indexCombinationLines.push(Array.from({ length: winCondition }, (_, k) => (i + k) * boardSize.cols + j - k));
                 }
             }
 
-            for (let winning_line of winning_lines) {
-                let isWinningLine = true;
-                for (let i = 0; i < winCondition - 1; i++) {
-                    const [a, b] = [winning_line[i], winning_line[i + 1]];
-                    if (!squares[a] || squares[a] !== squares[b]) {
-                        isWinningLine = false;
-                        break;
-                    }
-                }
-                if (isWinningLine) {
-                    return squares[winning_line[0]];
+            for (let indexCombinationLine of indexCombinationLines) {
+                const lineValues = indexCombinationLine.map(squareIndex => squares[squareIndex]);
+                if ([... new Set(lineValues)].length === 1 && lineValues[0] !== null) {
+                    return lineValues[0];
                 }
             }
+
             return null;
         }
 
