@@ -5,11 +5,14 @@
     <!-- Metadata -->
     <meta charset="UTF-8" />
     <!-- Title of the page -->
-    <title>Hello World</title>
+    <title>Tic Tac Toe</title>
     <!-- Scripts for React, ReactDOM, and Babel -->
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <!--This imports the React library for building user interfaces. -->
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <!--This imports the ReactDOM library, which is used for rendering React components in the DOM. -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!--This imports Babel, which is a JavaScript transpiler. It allows you to use JavaScript syntax (such as JSX) in older browsers. -->
     <!-- Styling -->
     <style>
         /* Styling for the squares on the board */
@@ -25,6 +28,12 @@
             display: flex;
             flex-direction: row;
         }
+
+        .board-row {
+            display: flex;
+            overflow-x: auto;
+            width: max-content;
+        }
     </style>
 </head>
 
@@ -33,6 +42,7 @@
     <div id="root"></div>
     <!-- JavaScript code -->
     <script type="text/babel">
+        // indicates that the JavaScript code within the tag should be processed by Babel before execution.
         // React component for rendering individual squares
         function Square({ value, onSquareClick }) {
             return (
@@ -44,10 +54,19 @@
 
         // React component for rendering the game board
         function Board({ xIsNext, squares, onPlay, boardSize }) {
+            const maxSize = Math.max(boardSize.rows, boardSize.cols);
+            if (boardSize.winCondition > maxSize) {
+                return (
+                    <>
+                        <p>Please enter correct values for win condition.</p>
+                    </>
+                )
+            }
+
             // Function to handle click events on squares
             function handleClick(i) {
                 // Check if there's already a winner or the square is already filled
-                if (calculateWinner(squares, boardSize) || squares[i]) {
+                if (calculateWinner(squares, boardSize, boardSize.winCondition) || squares[i]) {
                     return;
                 }
                 // Create a copy of the squares array
@@ -63,20 +82,22 @@
             }
 
             // Determine the status of the game (winner or next player)
-            const winner = calculateWinner(squares, boardSize);
+            const winner = calculateWinner(squares, boardSize, boardSize.winCondition);
             let status;
             if (winner) {
                 status = 'Winner: ' + winner;
+            } else if (squares.every(square => square)) {
+                status = 'Draw!';
             } else {
                 status = 'Next player: ' + (xIsNext ? 'X' : 'O');
             }
 
             // Generate rows and squares for the board
             const rows = [];
-            for (let i = 0; i < boardSize; i++) {
+            for (let i = 0; i < boardSize.rows; i++) {
                 const row = [];
-                for (let j = 0; j < boardSize; j++) {
-                    const index = i * boardSize + j;
+                for (let j = 0; j < boardSize.cols; j++) {
+                    const index = i * boardSize.cols + j;
                     row.push(<Square key={index} value={squares[index]} onSquareClick={() => handleClick(index)} />);
                 }
                 rows.push(<div className="board-row" key={i}>{row}</div>);
@@ -86,21 +107,22 @@
             return (
                 <>
                     <div className="status">{status}</div>
-                    {rows}
+                    <div className="board">{rows}</div>
                 </>
             );
         }
+
 
         // React component for the game logic
         function Game() {
             // State variables for game history, current move, and board size
             const [history, setHistory] = React.useState([Array(9).fill(null)]);
             const [currentMove, setCurrentMove] = React.useState(0);
-            const [boardSize, setBoardSize] = React.useState(3);
+            const [boardSize, setBoardSize] = React.useState({ rows: 3, cols: 3, winCondition: 3 });
 
             // Update history and current move when board size changes
             React.useEffect(() => {
-                setHistory([Array(boardSize * boardSize).fill(null)]);
+                setHistory([Array(boardSize.rows * boardSize.cols).fill(null)]);
                 setCurrentMove(0);
             }, [boardSize]);
 
@@ -117,9 +139,26 @@
             }
 
             // Function to change the board size
-            function changeBoardSize(size) {
-                setBoardSize(size);
+            function changeBoardSize(rows, cols) {
+                // Check if input values are not empty
+                if (rows && cols) {
+                    setBoardSize({ rows: rows, cols: cols, winCondition: boardSize.winCondition });
+                }
             }
+
+            // Function to change the win condition
+            function changeWinCondition(winCondition) {
+                // Calculate the maximum value between rows and columns
+                const maxSize = Math.max(boardSize.rows, boardSize.cols);
+                // Check if input value is not empty and doesn't exceed the maximum size
+                if (winCondition && winCondition <= maxSize) {
+                    setBoardSize({ rows: boardSize.rows, cols: boardSize.cols, winCondition: winCondition });
+                } else {
+                    // If the win condition exceeds the maximum size, set it to the maximum size
+                    setBoardSize({ rows: boardSize.rows, cols: boardSize.cols, winCondition: maxSize });
+                }
+            }
+
 
             // Calculate current squares and determine next player
             const currentSquares = history[currentMove];
@@ -143,78 +182,70 @@
             // Render the game board, moves, and board size selector
             return (
                 <div className="game">
+                    <div className="board-size-selector">
+                        <h3>Board size selector</h3>
+                        <label htmlFor="rows">Rows:</label>
+                        <input type="number" id="rows" value={boardSize.rows} onChange={(e) => changeBoardSize(parseInt(e.target.value), boardSize.cols)} />
+                        <label htmlFor="cols">Columns:</label>
+                        <input type="number" id="cols" value={boardSize.cols} onChange={(e) => changeBoardSize(boardSize.rows, parseInt(e.target.value))} />
+                        <label htmlFor="winCondition">Win Condition:</label>
+                        <input type="number" id="winCondition" value={boardSize.winCondition} onChange={(e) => changeWinCondition(parseInt(e.target.value))} />
+                        <p>Current Board Size: {boardSize.rows} x {boardSize.cols}</p>
+                    </div>
                     <div className="game-board">
                         <Board xIsNext={xIsNext} squares={currentSquares} onPlay={handlePlay} boardSize={boardSize} />
                     </div>
                     <div className="game-info">
                         <ol>{moves}</ol>
                     </div>
-                    <div className="board-size-selector">
-                        <h3>Board size selector</h3>
-                        <ul>
-                            <li>
-                                <button onClick={() => changeBoardSize(3)}>3</button>
-                            </li>
-                            <li>
-                                <button onClick={() => changeBoardSize(4)}>4</button>
-                            </li>
-                            <li>
-                                <button onClick={() => changeBoardSize(5)}>5</button>
-                            </li>
-                        </ul>
-                        <p>Current Board Size: {boardSize}</p>
-                    </div>
                 </div>
             );
         }
 
         // Function to calculate the winner
-        function calculateWinner(squares, boardSize) {
-            const lines = {
-                3: [
-                    [0, 1, 2],
-                    [3, 4, 5],
-                    [6, 7, 8],
-                    [0, 3, 6],
-                    [1, 4, 7],
-                    [2, 5, 8],
-                    [0, 4, 8],
-                    [2, 4, 6],
-                ],
-                4: [
-                    [0, 1, 2, 3],
-                    [4, 5, 6, 7],
-                    [8, 9, 10, 11],
-                    [12, 13, 14, 15],
-                    [0, 4, 8, 12],
-                    [1, 5, 9, 13],
-                    [2, 6, 10, 14],
-                    [3, 7, 11, 15],
-                    [0, 5, 10, 15],
-                    [3, 6, 9, 12]
-                ],
-                5: [
-                    [0, 1, 2, 3, 4],
-                    [5, 6, 7, 8, 9],
-                    [10, 11, 12, 13, 14],
-                    [15, 16, 17, 18, 19],
-                    [20, 21, 22, 23, 24],
-                    [0, 5, 10, 15, 20],
-                    [1, 6, 11, 16, 21],
-                    [2, 7, 12, 17, 22],
-                    [3, 8, 13, 18, 23],
-                    [4, 9, 14, 19, 24],
-                    [0, 6, 12, 18, 24],
-                    [4, 8, 12, 16, 20]
-                ],
-            };
-            const winningLines = lines[boardSize];
+        function calculateWinner(squares, boardSize, winCondition) {
+            if (winCondition === 1) {
+                // If win condition is 1, simply check if any square is filled
+                for (let i = 0; i < squares.length; i++) {
+                    if (squares[i]) {
+                        return squares[i];
+                    }
+                }
+            }
+            const lines = [];
 
-            for (let i = 0; i < winningLines.length; i++) {
-                const line = winningLines[i];
+            // Horizontal lines
+            for (let i = 0; i < boardSize.rows; i++) {
+                for (let j = 0; j <= boardSize.cols - winCondition; j++) {
+                    lines.push(Array.from({ length: winCondition }, (_, k) => i * boardSize.cols + j + k));
+                }
+            }
+
+            // Vertical lines
+            for (let i = 0; i <= boardSize.rows - winCondition; i++) {
+                for (let j = 0; j < boardSize.cols; j++) {
+                    lines.push(Array.from({ length: winCondition }, (_, k) => (i + k) * boardSize.cols + j));
+                }
+            }
+
+            // Diagonal lines (top-left to bottom-right)
+            for (let i = 0; i <= boardSize.rows - winCondition; i++) {
+                for (let j = 0; j <= boardSize.cols - winCondition; j++) {
+                    lines.push(Array.from({ length: winCondition }, (_, k) => (i + k) * boardSize.cols + j + k));
+                }
+            }
+
+            // Diagonal lines (top-right to bottom-left)
+            for (let i = 0; i <= boardSize.rows - winCondition; i++) {
+                for (let j = winCondition - 1; j < boardSize.cols; j++) {
+                    lines.push(Array.from({ length: winCondition }, (_, k) => (i + k) * boardSize.cols + j - k));
+                }
+            }
+
+            for (let line of lines) {
                 let isWinningLine = true;
-                for (let j = 0; j < line.length - 1; j++) {
-                    const [a, b] = [line[j], line[j + 1]];
+                for (let i = 0; i < winCondition - 1; i++) {
+                    const [a, b] = [line[i], line[i + 1]];
                     if (!squares[a] || squares[a] !== squares[b]) {
                         isWinningLine = false;
                         break;
